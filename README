@@ -1,0 +1,23 @@
+wave is a package for viewing, playing and splitting raw PCM files.
+The point of the package is really the latter -- giving a graphical,
+but user-frienly interface to splitting a long PCM file into smaller
+PCM files, for instance when sampling a record and splitting it into
+individual tracks.
+
+The package consists of two parts: A C program that analyzes a raw PCM
+file, and an Emacs interface to this data.
+
+The C program wants stereo, 16 bit, 44.1kHz raw PCM files.  If you
+have wav files, you can use sox to convert them to raw PCM like this:
+
+  sox file.wav -c 2 -s -w -r 44100 file.raw
+
+Compile and install the summarize and bsplit programs somewhere in
+your path, use the `M-x wave-file' command, and enter some raw PCM
+file.  You will then be presented with a buffer displaying the
+contents of the file, and you can zoom with the `z' command, `q' will
+unzoom (or quit if you're already unzoomed), `s' will set a split
+point, and `S' will split the file using the external bsplit program.
+
+wave is written by Lars Magne Ingbrigtsen <larsi@gnus.org>, and is
+released under the GNU General Public License.
