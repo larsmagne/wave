@@ -1,7 +1,7 @@
 ;;; wave.el --- Editing Sound Files
-;; Copyright (C) 2001, 2002, 2003 Lars Magne Ingebrigtsen
+;; Copyright (C) 2001, 2002, 2003, 2010, 2011 Lars Magne Ingebrigtsen
 
-;; Author: Lars Magne Ingebrigtsen <larsi@ifi.uio.no>
+;; Author: Lars Magne Ingebrigtsen <larsi@gnus.org>
 ;; Keywords: music
 
 ;; This file is not part of GNU Emacs.
@@ -236,7 +236,7 @@
 
 (defun wave-analyze-file (file &optional start length frames)
   (with-temp-buffer
-    (call-process "~/jukebox/misc/summarize"
+    (call-process "~/src/wave/summarize"
 		  nil (current-buffer) nil
 		  "-s" (if start (number-to-string (- start length)) "0")
 		  "-l" (if length (number-to-string length) "-1")
