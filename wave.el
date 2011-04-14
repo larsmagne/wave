@@ -255,7 +255,7 @@
   (wave-quit-playing)
   (let ((default-directory (file-name-directory wave-file)))
     (with-temp-buffer
-      (call-process "~/bin/bsplit"
+      (call-process "~/src/wave/bsplit"
 		    nil (current-buffer) nil
 		    wave-file
 		    (with-temp-buffer
