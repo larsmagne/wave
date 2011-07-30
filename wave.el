@@ -30,14 +30,14 @@
 
 (defface wave-face
   '((((class color))
-     (:font "inconsolata:size=3"
+     (:font "inconsolata:size=4"
 	    :foreground "white")))
   "Face used for the data.")
 
 (defface wave-split-face
   '((((class color))
      (:foreground "yellow" :background "red"
-		  :font "inconsolata:size=3")))
+		  :font "inconsolata:size=4")))
   "Face used for split marks.")
 
 (defvar wave-split-positions nil)
@@ -51,6 +51,8 @@
   (define-key wave-mode-map "s" 'wave-set-split-position)
   (define-key wave-mode-map "r" 'wave-remove-split-position)
   (define-key wave-mode-map "z" 'wave-zoom)
+  (define-key wave-mode-map [(meta right)] 'wave-next-screen)
+  (define-key wave-mode-map [(meta left)] 'wave-prev-screen)
   (define-key wave-mode-map "q" 'wave-quit)
   (define-key wave-mode-map "<" 'wave-goto-prev-split)
   (define-key wave-mode-map ">" 'wave-goto-next-split)
@@ -175,7 +177,7 @@
 (defun wave-generate-summary (&optional smoothe)
   (let* ((general (car wave-summary))
 	 (summary (cdr wave-summary))
-	 (height (* (- (window-height) 1) 3)))
+	 (height (* (- (window-height) 1) 5)))
     (erase-buffer)
     (dotimes (i height)
       (insert "\n"))
@@ -254,9 +256,9 @@
   (with-temp-buffer
     (call-process "~/src/wave/summarize"
 		  nil (current-buffer) nil
-		  "-s" (if start (number-to-string (- start length)) "0")
+		  "-s" (if start (number-to-string start) "0")
 		  "-l" (if length (number-to-string length) "-1")
-		  "-f" (if frames (number-to-string frames) "700")
+		  "-f" (if frames (number-to-string frames) "500")
 		  file)
     (goto-char (point-min))
     (while (re-search-forward "[0-9])" nil t)
@@ -319,7 +321,29 @@
   (interactive "p")
   (let ((position (get-text-property (point) 'position))
 	(frame-size (cadr (assq 'frame-size (car wave-summary)))))
-    (wave-file-1 wave-file position (* frame-size n))))
+    (wave-file-1 wave-file (- position frame-size) (* frame-size n))))
+
+(defun wave-next-screen ()
+  "Go to the next screen frames."
+  (interactive)
+  (let ((position (get-text-property (1- (line-end-position)) 'position))
+	(buffer (current-buffer)))
+    (wave-file-1 wave-file position
+		 (- position
+		    (get-text-property (line-beginning-position) 'position)))
+    (kill-buffer buffer)))
+
+(defun wave-prev-screen ()
+  "Go to the prev screen frames."
+  (interactive)
+  (let ((buffer (current-buffer))
+	(size
+	 (- (get-text-property (1- (line-end-position)) 'position)
+	    (get-text-property (line-beginning-position) 'position))))
+    (wave-file-1 wave-file
+		 (- (get-text-property (line-beginning-position) 'position) size)
+		 size)
+    (kill-buffer buffer)))
 
 (defun wave-quit ()
   "Pop back to the previous wave buffer."
