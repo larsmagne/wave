@@ -28,9 +28,16 @@
 (require 'cl)
 (require 'message)
 
+(defface wave-face
+  '((((class color))
+     (:font "inconsolata:size=3"
+	    :foreground "white")))
+  "Face used for the data.")
+
 (defface wave-split-face
   '((((class color))
-     (:foreground "yellow" :background "red")))
+     (:foreground "yellow" :background "red"
+		  :font "inconsolata:size=3")))
   "Face used for split marks.")
 
 (defvar wave-split-positions nil)
@@ -101,7 +108,7 @@
 	(mapcar (lambda (elem)
 		  (setq max (max (cadr (assq 'value elem)) max)))
 		(cdr wave-summary))
-	(setq wave-scale (/ (* 1.0 (1- (window-height))) max))))
+	(setq wave-scale (/ (* 3.0 (1- (window-height))) max))))
     (wave-generate-summary)))
 
 (defun wave-find-end (file)
@@ -168,7 +175,7 @@
 (defun wave-generate-summary (&optional smoothe)
   (let* ((general (car wave-summary))
 	 (summary (cdr wave-summary))
-	 (height (- (window-height) 1)))
+	 (height (* (- (window-height) 1) 3)))
     (erase-buffer)
     (dotimes (i height)
       (insert "\n"))
@@ -177,6 +184,15 @@
 			  (cadr (assq 'position column))
 			  (cadr (assq 'frame-size general))
 			  (cadr (assq 'value column))))
+    (goto-char (point-min))
+    (forward-line 1)
+    (put-text-property (point) (point-max) 'face 'wave-face)
+    (forward-line -1)
+    (while (progn
+	     (unless (get-text-property (point) 'face)
+	       (put-text-property (point) (1+ (point)) 'face 'wave-face))
+	     (not (eolp)))
+      (forward-char 1))
     (if (not wave-split-positions)
 	(goto-char (point-min))
       (wave-goto-last-split))
@@ -222,9 +238,9 @@
   (put-text-property (1- (point)) (point) 'position position)
   (put-text-property (1- (point)) (point) 'value value)
   (let ((current-split (wave-split-position-p position frame-size)))
-  (when current-split
-    (put-text-property (1- (point)) (point) 'face 'wave-split-face)
-    (put-text-property (1- (point)) (point) 'split-position current-split))))
+    (when current-split
+      (put-text-property (1- (point)) (point) 'face 'wave-split-face)
+      (put-text-property (1- (point)) (point) 'split-position current-split))))
 
 (defun wave-split-position-p (position frame-size)
   (let ((pos-p nil))
@@ -240,7 +256,7 @@
 		  nil (current-buffer) nil
 		  "-s" (if start (number-to-string (- start length)) "0")
 		  "-l" (if length (number-to-string length) "-1")
-		  "-f" (if frames (number-to-string frames) "79")
+		  "-f" (if frames (number-to-string frames) "700")
 		  file)
     (goto-char (point-min))
     (while (re-search-forward "[0-9])" nil t)
