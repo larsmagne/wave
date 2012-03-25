@@ -35,18 +35,18 @@ void summarize (char *file) {
   short value;
   
   if (! (buf = (short *) malloc (BUFFER_SIZE * sizeof(short)))) {
-    perror ("summarize");
-    exit (-1);
+    perror("summarize");
+    exit(-1);
   }
   
   if (! (in = open (file, O_RDONLY))) {
-    perror ("summarize");
-    exit (-1);
+    perror("summarize");
+    exit(-1);
   }
 
   if (fstat (in, &statbuf) < 0) {
-    perror ("summarize");
-    exit (-1);
+    perror("summarize");
+    exit(-1);
   }
 
   size = statbuf.st_size;
@@ -60,7 +60,7 @@ void summarize (char *file) {
     end = start + length;
 
   if (start != 0)
-    lseek(in, start*sizeof(short), SEEK_SET);
+    lseek(in, start * sizeof(short), SEEK_SET);
 
   file_pos = start;
   frame_size = length / frames;
