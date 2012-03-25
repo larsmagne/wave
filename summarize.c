@@ -13,6 +13,7 @@
 static int length = -1;
 static int start = 0;
 static int frames = 79;
+static int stride_size = 0;
 
 int max (int a, int b) {
   return (a > b? a: b);
@@ -65,6 +66,9 @@ void summarize (char *file) {
   file_pos = start;
   frame_size = length / frames;
 
+  if (stride_size)
+    frames = size / stride_size;
+
   printf ("(((length %d) (start %d) (end %d) (frames %d) (frame-size %d))\n", 
 	  length, start, end, frames, frame_size);
 
@@ -77,6 +81,10 @@ void summarize (char *file) {
     max_value = 0;
     while (pos < frame_size) {
       if (buffer_pos * sizeof(short) >= read_len) {
+	/* If we're doing a smooth curve instead of a summarisation per
+	   frame, skip backwards in the file. */
+	if (stride_size)
+	  lseek(in, (stride_size * nframe) * sizeof(short), SEEK_SET);
 	read_len = read (in, buf, min(BUFFER_SIZE, frame_size - frame_pos)
 			 * sizeof(short));
 	buffer_pos = 0;
@@ -105,6 +113,7 @@ int main (int argc, char **argv) {
       {"help", 1, 0, 'h'},
       {"length", 1, 0, 'l'},
       {"frames", 1, 0, 'f'},
+      {"stride-size", 1, 0, 'z'},
       {"start", 1, 0, 's'},
       {0, 0, 0, 0}
     };
@@ -120,15 +129,19 @@ Usage: summarize [--help] [--length <length>] [--start <start>] <file>\n");
       break;
 
     case 's':
-      start = atoi (optarg);
+      start = atoi(optarg);
+      break;
+
+    case 'z':
+      stride_size = atoi(optarg);
       break;
 
     case 'f':
-      frames = atoi (optarg);
+      frames = atoi(optarg);
       break;
 
     case 'l':
-      length = atof (optarg);
+      length = atof(optarg);
       break;
 
     }
