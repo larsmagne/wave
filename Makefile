@@ -7,7 +7,7 @@ SWITCHES = -Wall -g -funroll-loops\
 	-falign-jumps=4 -falign-loops=4
 INSTALLATION_DIRECTORY=../bin
 
-all: summarize bsplit
+all: summarize bsplit vsplit
 
 .c.o: 
 	$(CC) $(SWITCHES) -c $*.c
