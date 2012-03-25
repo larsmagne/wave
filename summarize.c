@@ -31,7 +31,7 @@ void summarize (char *file) {
   int frame_size = 0;
   int in, nframe = 0, pos, read_len, buffer_pos, frame_pos, file_pos;
   double sample;
-  int max_value = 0, min_value = 0;
+  int max_value = 0;
   short value;
   
   if (! (buf = (short *) malloc (BUFFER_SIZE * sizeof(short)))) {
@@ -75,7 +75,6 @@ void summarize (char *file) {
     frame_pos = 0;
     sample = 0;
     max_value = 0;
-    min_value = 0;
     while (pos < frame_size) {
       if (buffer_pos * sizeof(short) >= read_len) {
 	read_len = read (in, buf, min(BUFFER_SIZE, frame_size - frame_pos)
@@ -84,7 +83,6 @@ void summarize (char *file) {
       }
       value = buf[buffer_pos++];
       max_value = max(abs(value), max_value);
-      min_value = min(value, min_value);
       sample += value * value;
       pos++;
       frame_pos++;
