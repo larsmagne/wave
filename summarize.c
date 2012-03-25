@@ -13,7 +13,7 @@
 static int length = -1;
 static int start = 0;
 static int frames = 79;
-static int stride_size = 0;
+static int summary_size = -1;
 
 int max (int a, int b) {
   return (a > b? a: b);
@@ -35,17 +35,17 @@ void summarize (char *file) {
   int max_value = 0;
   short value;
   
-  if (! (buf = (short *) malloc (BUFFER_SIZE * sizeof(short)))) {
+  if (! (buf = (short *) malloc(BUFFER_SIZE * sizeof(short)))) {
     perror("summarize");
     exit(-1);
   }
   
-  if (! (in = open (file, O_RDONLY))) {
+  if (! (in = open(file, O_RDONLY))) {
     perror("summarize");
     exit(-1);
   }
 
-  if (fstat (in, &statbuf) < 0) {
+  if (fstat(in, &statbuf) < 0) {
     perror("summarize");
     exit(-1);
   }
@@ -63,30 +63,30 @@ void summarize (char *file) {
   if (start != 0)
     lseek(in, start * sizeof(short), SEEK_SET);
 
-  file_pos = start;
   frame_size = length / frames;
 
-  if (stride_size)
-    frames = size / stride_size;
+  if (summary_size == -1)
+    summary_size = frame_size;
 
-  printf ("(((length %d) (start %d) (end %d) (frames %d) (frame-size %d))\n", 
-	  length, start, end, frames, frame_size);
+  printf ("(((length %d) (start %d) (end %d) (frames %d) (frame-size %d) (summary-size %d))\n", 
+	  length, start, end, frames, frame_size,
+	  summary_size);
 
   while (nframe < frames) {
+    /* If we're doing a smooth curve instead of a summarisation per
+       frame, skip backwards in the file. */
+    file_pos = start + nframe * frame_size;
+    lseek(in, file_pos * sizeof(short), SEEK_SET);
     pos = 0;
     read_len = 0;
     buffer_pos = 0;
     frame_pos = 0;
     sample = 0;
     max_value = 0;
-    while (pos < frame_size) {
+    while (pos < summary_size) {
       if (buffer_pos * sizeof(short) >= read_len) {
-	/* If we're doing a smooth curve instead of a summarisation per
-	   frame, skip backwards in the file. */
-	if (stride_size)
-	  lseek(in, (stride_size * nframe) * sizeof(short), SEEK_SET);
-	read_len = read (in, buf, min(BUFFER_SIZE, frame_size - frame_pos)
-			 * sizeof(short));
+	read_len = read(in, buf, min(BUFFER_SIZE, summary_size - frame_pos)
+			* sizeof(short));
 	buffer_pos = 0;
       }
       value = buf[buffer_pos++];
@@ -97,7 +97,7 @@ void summarize (char *file) {
       file_pos++;
     }
     printf("((position %d) (value %d) (max %d))\n", file_pos,
-	   (int)sqrt(sample/frame_size), max_value);
+	   (int)sqrt(sample/summary_size), max_value);
     nframe++;
   }
   printf(")\n");
@@ -113,7 +113,7 @@ int main (int argc, char **argv) {
       {"help", 1, 0, 'h'},
       {"length", 1, 0, 'l'},
       {"frames", 1, 0, 'f'},
-      {"stride-size", 1, 0, 'z'},
+      {"summary-size", 1, 0, 'b'},
       {"start", 1, 0, 's'},
       {0, 0, 0, 0}
     };
@@ -132,8 +132,8 @@ Usage: summarize [--help] [--length <length>] [--start <start>] <file>\n");
       start = atoi(optarg);
       break;
 
-    case 'z':
-      stride_size = atoi(optarg);
+    case 'b':
+      summary_size = atoi(optarg);
       break;
 
     case 'f':
