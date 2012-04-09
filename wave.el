@@ -30,14 +30,12 @@
 
 (defface wave-face
   '((((class color))
-     (:font "inconsolata:size=4"
-	    :foreground "white")))
+     (:foreground "white")))
   "Face used for the data.")
 
 (defface wave-split-face
   '((((class color))
-     (:foreground "yellow" :background "red"
-		  :font "inconsolata:size=4")))
+     (:foreground "yellow" :background "red")))
   "Face used for split marks.")
 
 (defvar wave-split-positions nil)
@@ -80,7 +78,7 @@
 (defun wave-file (file tracks)
   "Summarize FILE."
   (interactive "fFile name: \nnTracks: ")
-  (wave-file-1 file nil nil tracks))
+  (wave-file-1 (expand-file-name file) nil nil tracks))
 
 (defun wave-file-1 (file &optional start length tracks)
   (let ((auto-splits nil))
@@ -110,7 +108,7 @@
 	(mapcar (lambda (elem)
 		  (setq max (max (cadr (assq 'value elem)) max)))
 		(cdr wave-summary))
-	(setq wave-scale (/ (* 3.0 (1- (window-height))) max))))
+	(setq wave-scale (/ (* 1.0 (1- (window-height))) max))))
     (wave-generate-summary)))
 
 (defun wave-find-end (file)
@@ -258,7 +256,13 @@
 		  nil (current-buffer) nil
 		  "-s" (if start (number-to-string start) "0")
 		  "-l" (if length (number-to-string length) "-1")
-		  "-f" (if frames (number-to-string frames) "500")
+		  "--summary-size" (format "%d" (* 2 44100 0.5))
+		  "-f" (if frames (number-to-string frames)
+			 (or "80"
+			     (let ((file-seconds
+				    (/ (nth 7 (file-attributes file))
+				       2 2 44100)))
+			       (format "%s" (/ file-seconds 4)))))
 		  file)
     (goto-char (point-min))
     (while (re-search-forward "[0-9])" nil t)
