@@ -29,8 +29,12 @@
 (require 'message)
 
 (defface wave-face
-  '((((class color))
-     (:foreground "white")))
+  '((((class color)
+      (background dark))
+     (:foreground "white"))
+    (((class color)
+      (background light))
+     (:foreground "black")))
   "Face used for the data.")
 
 (defface wave-split-face
