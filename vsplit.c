@@ -14,6 +14,7 @@ char *output = "output";
 int avglen = 44100;
 int verbose = 0;
 int spread = 2;
+int summarise = 0;
 
 int max (int a, int b) {
   return (a > b? a: b);
@@ -130,6 +131,7 @@ read_more:
 	     avg > proper_limit)) {
 	  sprint ("Close", count, part-1);
 	  close_pos = count;
+	  printf("stop %u\n", close_pos);
 	}
 	if (avg > limit_plus_spread) {
 	  in_song = 1;
@@ -157,20 +159,32 @@ read_more:
 
 	  if (out) {
 	    if (stop[seq] < block_start) {
-	      ftruncate (out, stop[seq] - write_start);
+	      if (summarise)
+		printf("astop %u\n", stop[seq] - write_start);
+	      else
+		ftruncate (out, stop[seq] - write_start);
 	    } else {
-	      sp_write (out, (char*)((unsigned int)buf +
-				     max (write_start - block_start, 0)),
-			(stop[seq] - max (block_start, write_start)));
+	      if (! summarise)
+		sp_write (out, (char*)((unsigned int)buf +
+				       max (write_start - block_start, 0)),
+			  (stop[seq] - max (block_start, write_start)));
 	    }
-	    close (out);
+	    if (! summarise)
+	      close(out);
+	    else
+	      printf("stop %u\n", close_pos);
 	    out = 0;
 	  }
-	  		
-	  sprintf (sbuf, "%s-%02d.raw", output, part++);
-	  if ((out = open (sbuf, O_RDWR | O_CREAT | O_TRUNC, 0644)) < 0) {
-	    perror ("vsplit");
-	    exit (-1);
+
+	  if (! summarise) {
+	    sprintf (sbuf, "%s-%02d.raw", output, part++);
+	    if ((out = open (sbuf, O_RDWR | O_CREAT | O_TRUNC, 0644)) < 0) {
+	      perror ("vsplit");
+	      exit (-1);
+	    }
+	  } else {
+	    out = 1;
+	    printf("start %u\n", split_pos);
 	  }
 	  
 	  seq++;
@@ -187,10 +201,10 @@ read_more:
       } 
       b += 2;
     }
-    if (out) {
-      sp_write (out, (char*) ((unsigned int)buf
-			      + max (write_start - block_start, 0)),
-		(count - max (block_start, write_start)));
+    if (out && !summarise) {
+      sp_write(out, (char*) ((unsigned int)buf
+			     + max(write_start - block_start, 0)),
+	       (count - max(block_start, write_start)));
     }
   }
   if (len == -1) {
@@ -209,13 +223,20 @@ read_more:
 
   if (out) {
     if (stop[seq] < block_start) {
-      ftruncate (out, stop[seq] - write_start);
+      if (summarise)
+	printf("stop %u\n", stop[seq] - write_start);
+      else
+	ftruncate (out, stop[seq] - write_start);
     } else if (in_song) {
-      sp_write (out, (char*) ((unsigned int) buf +
-			      max (write_start - block_start, 0)),
-		(stop[seq] - max (block_start, write_start)));
+      if (! summarise)
+	sp_write (out, (char*) ((unsigned int) buf +
+				max (write_start - block_start, 0)),
+		  (stop[seq] - max (block_start, write_start)));
     }
-    close (out);
+    if (! summarise)
+      close (out);
+    else
+      printf("stop %u\n", close_pos);
     out = 0;
   }
 
@@ -231,6 +252,7 @@ int main (int argc, char **argv) {
     int option_index = 0;
     static struct option long_options[] = {
       {"help", 1, 0, 'h'},
+      {"summarise", 1, 0, 'u'},
       {"floor", 1, 0, 'f'},
       {"length", 1, 0, 'l'},
       {"output", 1, 0, 'o'},
@@ -239,7 +261,7 @@ int main (int argc, char **argv) {
       {0, 0, 0, 0}
     };
 
-    c = getopt_long (argc, argv, "hvl:o:f:s:c:", long_options, &option_index);
+    c = getopt_long (argc, argv, "huvl:o:f:s:c:", long_options, &option_index);
     if (c == -1)
       break;
 
@@ -255,7 +277,8 @@ Usage: vsplit [--help] [--floor <limit>] [--length <length>]\n\
 \n\
 Reasonable values are:\n\
 \n\
-vsplit -f 15 -s 2 -l 0.5 -o output input.raw");
+vsplit -f 15 -s 2 -l 0.5 -o output input.raw\n");
+      exit(0);
       break;
 
     case 'f':
@@ -268,6 +291,10 @@ vsplit -f 15 -s 2 -l 0.5 -o output input.raw");
 
     case 'l':
       avglen = atof (optarg) * 44100 * 2;
+      break;
+
+    case 'u':
+      summarise = 1;
       break;
 
     case 'o':
