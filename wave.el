@@ -234,7 +234,7 @@
     (forward-line 1)
     (end-of-line))
   (while (not (eobp))
-    (insert " ")
+    (insert "o")
     (forward-line 1)
     (end-of-line))
   (goto-char (point-min))
@@ -307,7 +307,9 @@
 			   "split-\\([0-9]*\\).raw$" 
 			   (replace-regexp-in-string
 			    ".raw$" "-\\\\1.raw" wave-file)
-			   (file-name-nondirectory file)))))))
+			   (file-name-nondirectory file)))))
+    (other-window 1)
+    (jukebox-dedisplay)))
 
 (defun wave-set-split-position ()
   "Mark the current column as a split position."
