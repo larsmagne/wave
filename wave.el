@@ -309,7 +309,7 @@
 			    ".raw$" "-\\\\1.raw" wave-file)
 			   (file-name-nondirectory file)))))
     (other-window 1)
-    (jukebox-dedisplay)))
+    (jukebox-redisplay)))
 
 (defun wave-set-split-position ()
   "Mark the current column as a split position."
