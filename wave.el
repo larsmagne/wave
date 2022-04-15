@@ -160,8 +160,8 @@
 	(sum 0))
     (while (and summary
 		(< done length))
-      (incf sum (cadr (assoc 'value (pop summary))))
-      (incf done))
+      (cl-incf sum (cadr (assoc 'value (pop summary))))
+      (cl-incf done))
     (if (zerop done)
 	0
       (/ sum done))))
@@ -170,11 +170,11 @@
   (let* ((file-seconds (/ (nth 7 (file-attributes file))
 			  2 2 44100))
 	 (summary (wave-analyze-file file nil nil (* file-seconds 4))))
-    (loop for bottom in
-	  (wave-n-best-bottoms
-	   (wave-find-bottoms (wave-smoothe-curve (cdr summary)))
-	   (1- tracks))
-	  collect (cadr (car bottom)))))
+    (cl-loop for bottom in
+	     (wave-n-best-bottoms
+	      (wave-find-bottoms (wave-smoothe-curve (cdr summary)))
+	      (1- tracks))
+	     collect (cadr (car bottom)))))
     
 (defun wave-generate-summary (&optional smoothe)
   (let* ((general (car wave-summary))
@@ -413,25 +413,25 @@
 	(acc 0))
     (dolist (elem data)
       (aset array i (cadr (assoc 'value elem)))
-      (incf i))
+      (cl-incf i))
     (dotimes (j (1- length))
       (aset output-array j (aref array j))
-      (incf acc (aref array j)))
-    (loop for j from length upto (1- (length array))
-	  do (progn
-	       (incf acc (aref array j))
-	       (aset output-array (- j (/ length 2))
-		     (float (round (/ acc length))))
-	       (decf acc (aref array (- j length)))))
-    (loop for j from (- (length array) (/ length 2)) upto (1- (length array))
-	  do (aset output-array j (aref array j)))
+      (cl-incf acc (aref array j)))
+    (cl-loop for j from length upto (1- (length array))
+	     do (progn
+		  (cl-incf acc (aref array j))
+		  (aset output-array (- j (/ length 2))
+			(float (round (/ acc length))))
+		  (cl-decf acc (aref array (- j length)))))
+    (cl-loop for j from (- (length array) (/ length 2)) upto (1- (length array))
+	     do (aset output-array j (aref array j)))
     (setq i 0)
     (let ((result nil))
       (dolist (elem data)
 	(push (list (car elem)
 		    (list 'value (aref output-array i)))
 	      result)
-	 (incf i))
+	 (cl-incf i))
       (nreverse result))))
 
 (defun wave-find-bottoms (data)
@@ -448,61 +448,61 @@
     (dolist (elem data)
       (aset array i (cadr (assoc 'value elem)))
       (aset darray i elem)
-      (incf mean (cadr (assoc 'value elem)))
-      (incf i))
+      (cl-incf mean (cadr (assoc 'value elem)))
+      (cl-incf i))
     (setq mean (truncate (/ mean (length array)))
 	  sound-cut (truncate (* mean 1)))
     (message "mean: %s" mean)
-    (loop for i from 1 upto (- (length array) 2)
-	  do (progn
-	       (setq value (aref array i))
-	       (if (= value (aref array (1+ i)))
-		   (unless start-plateau
-		     (setq start-plateau i))
-		 (when (and (< value (aref array (1+ i)))
-			    (< value prev)
-			    (< value (* mean 0.8)))
-		   (push (if start-plateau
-			     (- i (/ (- i start-plateau) 2))
-			   i)
-			 possible-extremas)
-		   (setq start-plateau nil
-			 had-top 0))
-		 (when (> value sound-cut)
-		   (when possible-extremas
-		     (message "%s" possible-extremas)
-		     (push (loop with min = 40000
-				 with min-point
-				 for i in possible-extremas
-				 when (< (aref array i) min)
-				 do (setq min (aref array i)
-					  min-point i)
-				 finally (return i))
-			   extremas)
-		     (setq possible-extremas nil))
-		   (incf had-top))
-		 (setq prev value))))
+    (cl-loop for i from 1 upto (- (length array) 2)
+	     do (progn
+		  (setq value (aref array i))
+		  (if (= value (aref array (1+ i)))
+		      (unless start-plateau
+			(setq start-plateau i))
+		    (when (and (< value (aref array (1+ i)))
+			       (< value prev)
+			       (< value (* mean 0.8)))
+		      (push (if start-plateau
+				(- i (/ (- i start-plateau) 2))
+			      i)
+			    possible-extremas)
+		      (setq start-plateau nil
+			    had-top 0))
+		    (when (> value sound-cut)
+		      (when possible-extremas
+			(message "%s" possible-extremas)
+			(push (cl-loop with min = 40000
+				       with min-point
+				       for i in possible-extremas
+				       when (< (aref array i) min)
+				       do (setq min (aref array i)
+						min-point i)
+				       finally (return i))
+			      extremas)
+			(setq possible-extremas nil))
+		      (cl-incf had-top))
+		    (setq prev value))))
     (cdr
-     (loop for i in (nreverse extremas)
-	   collect (aref darray i)))))
+     (cl-loop for i in (nreverse extremas)
+	      collect (aref darray i)))))
 
 (defun wave-n-best-bottoms (bottoms n)
-  (let ((bottoms (copy-list bottoms))
+  (let ((bottoms (cl-copy-list bottoms))
 	low
 	(low-elem nil)
 	result)
     (while (plusp n)
       (setq low 40000)
       (push
-       (loop for bottom in bottoms
-	     for value = (cadr (assoc 'value bottom))
-	     when (< value low)
-	     do (progn
-		  (setq low value)
-		  (setq low-elem bottom))
-	     finally (return low-elem))
+       (cl-loop for bottom in bottoms
+		for value = (cadr (assoc 'value bottom))
+		when (< value low)
+		do (progn
+		     (setq low value)
+		     (setq low-elem bottom))
+		finally (return low-elem))
        result)
-      (decf n)
+      (cl-decf n)
       (setq bottoms (delete (car result) bottoms)))
     (nreverse result)))
 
