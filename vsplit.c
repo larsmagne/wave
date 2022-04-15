@@ -38,7 +38,7 @@ void sp_write (int fd, void *buf, int count) {
       block = count;
     if ((l = write (fd, (char*)(buf + start), block)) < 0) {
       perror ("vsplit write");
-      printf ("%x %x %x\n", fd, (unsigned int)buf, count);
+      printf ("%x %p %x\n", fd, buf, count);
       exit (-1);
     }
     start += l;
@@ -165,8 +165,7 @@ read_more:
 		ftruncate (out, stop[seq] - write_start);
 	    } else {
 	      if (! summarise)
-		sp_write (out, (char*)((unsigned int)buf +
-				       max (write_start - block_start, 0)),
+		sp_write (out, (char*)buf + max (write_start - block_start, 0),
 			  (stop[seq] - max (block_start, write_start)));
 	    }
 	    if (! summarise)
@@ -202,8 +201,7 @@ read_more:
       b += 2;
     }
     if (out && !summarise) {
-      sp_write(out, (char*) ((unsigned int)buf
-			     + max(write_start - block_start, 0)),
+      sp_write(out, (char*) buf + max(write_start - block_start, 0),
 	       (count - max(block_start, write_start)));
     }
   }
@@ -229,8 +227,7 @@ read_more:
 	ftruncate (out, stop[seq] - write_start);
     } else if (in_song) {
       if (! summarise)
-	sp_write (out, (char*) ((unsigned int) buf +
-				max (write_start - block_start, 0)),
+	sp_write (out, (char*) buf + max (write_start - block_start, 0),
 		  (stop[seq] - max (block_start, write_start)));
     }
     if (! summarise)

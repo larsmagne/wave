@@ -31,7 +31,7 @@ void sp_write (FILE *fd, void *buf, int count) {
       block = count;
     if ((l = fwrite ((char*)(buf + start), 1, block, fd)) < 0) {
       perror ("bsplit write");
-      printf ("%x %x\n", (unsigned int)buf, count);
+      printf ("%p %x\n", buf, count);
       exit (-1);
     }
     start += l;
@@ -121,7 +121,7 @@ void bsplit (char *file, char *split_spec) {
     pos += skip_length;
   }
 
-  printf("%llu %llu\n", pos, size);
+  printf("%llx %llx\n", pos, size);
 
   if (fout) {
     sp_write(fout, obuf, opos);

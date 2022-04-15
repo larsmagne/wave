@@ -1,6 +1,6 @@
 DLIBS =
 
-CC = gcc
+CC = gcc -lm
 
 SWITCHES = -Wall -g -funroll-loops\
 	-fstrength-reduce -ffast-math -falign-functions=4 \
