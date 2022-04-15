@@ -396,7 +396,7 @@
   (let ((frame-size (cadr (assq 'frame-size (car wave-summary)))))
     (setq wave-play-process
 	  (start-process "aplay" (get-buffer-create " *aplay*")
-			 "/usr/local/src/alsa-utils-1.0.13/aplay/aplay"
+			 "/usr/src/alsa-utils-1.0.13/aplay/aplay"
 			 "-f" "S16_LE" "-r" "44100" "-c" "2"
 			 "-t" "raw"
 			 "-S" (number-to-string
