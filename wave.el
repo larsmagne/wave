@@ -260,7 +260,7 @@
 		  nil (current-buffer) nil
 		  "-s" (if start (number-to-string start) "0")
 		  "-l" (if length (number-to-string length) "-1")
-		  "--summary-size" (format "%d" (* 2 44100 0.5))
+		  ;;"--summary-size" (format "%d" (* 2 44100 0.5))
 		  "-f" (if frames (number-to-string frames)
 			 (or "80"
 			     (let ((file-seconds
