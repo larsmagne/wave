@@ -25,7 +25,6 @@
 
 ;;; Code:
 
-(require 'cl)
 (require 'message)
 
 (defface wave-face
@@ -109,9 +108,9 @@
       (setq wave-split-positions auto-splits
 	    wave-file file)
       (let ((max 0))
-	(mapcar (lambda (elem)
-		  (setq max (max (cadr (assq 'value elem)) max)))
-		(cdr wave-summary))
+	(mapc (lambda (elem)
+		(setq max (max (cadr (assq 'value elem)) max)))
+	      (cdr wave-summary))
 	(setq wave-scale (/ (* 1.0 (1- (window-height))) max))))
     (wave-generate-summary)))
 
@@ -435,7 +434,6 @@
       (nreverse result))))
 
 (defun wave-find-bottoms (data)
-  (setq d data)
   (let ((array (make-vector (length data) 0))
 	(darray (make-vector (length data) 0))
 	(i 0)
@@ -491,7 +489,7 @@
 	low
 	(low-elem nil)
 	result)
-    (while (plusp n)
+    (while (cl-plusp n)
       (setq low 40000)
       (push
        (cl-loop for bottom in bottoms
