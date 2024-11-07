@@ -28,17 +28,13 @@
 (require 'message)
 
 (defface wave-face
-  '((((class color)
-      (background dark))
-     (:foreground "white"))
-    (((class color)
-      (background light))
-     (:foreground "black")))
+  '((t :inherit fixed-pitch))
   "Face used for the data.")
 
 (defface wave-split-face
   '((((class color))
-     (:foreground "yellow" :background "red")))
+     ( :foreground "yellow" :background "red"
+       :inherit fixed-pitch)))
   "Face used for split marks.")
 
 (defvar wave-split-positions nil)
@@ -111,7 +107,7 @@
 	(mapc (lambda (elem)
 		(setq max (max (cadr (assq 'value elem)) max)))
 	      (cdr wave-summary))
-	(setq wave-scale (/ (* 1.0 (1- (window-height))) max))))
+	(setq wave-scale (/ (* 1.0 (- (window-height) 4)) max))))
     (wave-generate-summary)))
 
 (defun wave-find-end (file)
@@ -178,7 +174,7 @@
 (defun wave-generate-summary (&optional smoothe)
   (let* ((general (car wave-summary))
 	 (summary (cdr wave-summary))
-	 (height (* (- (window-height) 1) 5)))
+	 (height (window-height)))
     (erase-buffer)
     (dotimes (i height)
       (insert "\n"))
@@ -233,7 +229,7 @@
     (forward-line 1)
     (end-of-line))
   (while (not (eobp))
-    (insert "o")
+    (insert " ")
     (forward-line 1)
     (end-of-line))
   (goto-char (point-min))
@@ -261,7 +257,7 @@
 		  "-l" (if length (number-to-string length) "-1")
 		  ;;"--summary-size" (format "%d" (* 2 44100 0.5))
 		  "-f" (if frames (number-to-string frames)
-			 (or "80"
+			 (or "88"
 			     (let ((file-seconds
 				    (/ (nth 7 (file-attributes file))
 				       2 2 44100)))
